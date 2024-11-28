@@ -16,8 +16,9 @@ fn make_request() -> Result<String, Box<dyn Error>> {
     Ok(body)
 }
 
+use std::borrow::Cow;
 // Assumes a nice structured JSON, with no spaces etc...
-fn parse_json_value(json_bytes: &[u8], key_bytes: &[u8], position: &mut usize) -> Option<String> {
+fn parse_json_value<'a>(json_bytes: &'a [u8], key_bytes: &[u8], position: &mut usize) -> Option<Cow<'a, str>> {
     // Find the position of the key in the byte slice (no allocations)
     if let Some(key_start) = efficient_find_bytes(json_bytes, key_bytes, *position) {
         // Move past the key and colon
@@ -36,11 +37,9 @@ fn parse_json_value(json_bytes: &[u8], key_bytes: &[u8], position: &mut usize) -
 
         // If the value is wrapped in quotes, strip them
         if value_bytes.starts_with(&[b'"']) && value_bytes.ends_with(&[b'"']) {
-            return Some(
-                String::from_utf8_lossy(&value_bytes[1..value_bytes.len() - 1]).into_owned(),
-            );
+            return Some(Cow::Borrowed(std::str::from_utf8(&value_bytes[1..value_bytes.len() - 1]).unwrap()));
         }
-        Some(String::from_utf8_lossy(value_bytes).into_owned())
+        Some(Cow::Borrowed(std::str::from_utf8(value_bytes).unwrap()))
     } else {
         None
     }
