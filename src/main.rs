@@ -76,6 +76,7 @@ fn naive_find_bytes(haystack: &[u8], needle: &[u8], start: usize) -> Option<usiz
 
 // Find the position of a byte (needle) in another byte slice (haystack)
 // TODO: A SIMD approach could be used to compare e.g. 32 bytes at once
+//       once single threaded performance is fine, we could multithread the parsing via chunks
 fn efficient_find_bytes(haystack: &[u8], needle: &[u8], start: usize) -> Option<usize> {
     haystack[start..]
         .windows(needle.len())
